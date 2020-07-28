@@ -6,18 +6,17 @@
 При ошибках запуска или его невозможности необходимо создать такие файлы (и заполнить в случае DemPath и settings)                
 Также можно настроить logrotate для данной службы путем создания или редактирования фалйа demlogctl по пути /etc/logrotate.d/     
 Ниже приведен пример содержания каждого фала и содержание фала demon.service...                                                   
-
-DemPath.conf:
+/////////////////////////////////////////////////////////
+/etc/DemPath.conf:
 /home/user/Qt_prog/build-ProcPlug-Desktop-Debug/ProcPlug;
 /home/user/C_Prog/Test_ReadFile/main;
-
-settings.ini:
+/////////////////////////////////////////////////////////
+/etc/settings.ini:
 pid_file_path=/tmp/my_demon.pid;
-config_file_path=/home/user/Qt_prog/etc/Proc_path.cfg;
-log_file_path=/home/user/Qt_prog/Log/DemonLog.txt;
+config_file_path=/etc/DemPath.conf;
+log_file_path=/var/log/DemLog.log;
 /////////////////////////////////////////////////////////
 точное содержание demon.service: 
-
 [Unit]
 Description = Exec proc from cfg files
 
