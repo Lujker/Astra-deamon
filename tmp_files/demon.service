@@ -1,0 +1,12 @@
+[Unit]
+Description = Exec proc from cfg files
+
+[Service]
+Type=forking
+ExecStart=sudo /home/user/Qt_prog/build-Demon-Desktop-Debug/Demon -d &
+ExecStop=sudo /usr/bin/killall Demon
+Restart=sudo /usr/bin/killall -s -12 Demon
+PIDFile=/tmp/my_demon.pid
+
+[Install]
+WantedBy=multi-user.target

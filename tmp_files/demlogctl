@@ -1,0 +1,8 @@
+/var/log/DemLog.log{
+    daily
+    rotate 3
+    size 10M
+    compress
+    delaycompress
+    copytruncate
+}
