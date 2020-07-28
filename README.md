@@ -8,4 +8,5 @@ The service runs through the systemd system and has a unit file that should be l
 The file with the paths to the executable files must be located along the path: /etc/DemPath.conf (one path per line, the path ends with ';')
 The log file is located along the path: /var/log/DemLog.log.
 In case of startup errors or its impossibility, you must create such files (and fill in in the case of DemPath and settings)
+
 @@@ If you are interested in an example of the content of the files, write to me.
