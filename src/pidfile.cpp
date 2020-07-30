@@ -50,7 +50,7 @@ int Pid_file::getPidfilehendler() const
 Pid_file::~Pid_file()
 {
     if(pidfilehendler!=-1&&pidfilehendler!=0){
-        if (lockf(pidfilehendler,F_ULOCK,0) == -1) //снимаем блокировку с файла и закрываем его
+        if (lockf(pidfilehendler,F_ULOCK,0) == -1)
         {
             /* Couldn't get lock on lock file */
 //            WriteLog("Failed unlock pid file");
