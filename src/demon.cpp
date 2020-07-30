@@ -24,9 +24,9 @@ Demon::~Demon()
 bool Demon::start()
 {
 ///////////////////////////////////////////////////////////////////////////
-    int               pid; //последний pid
-    size_t exec_patc_count=0; //счетчик запускаемых процессов
-    std::string exec_file; //путь к запускаемому файлу
+    int               pid; 
+    size_t exec_patc_count=0; 
+    std::string exec_file; 
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -37,22 +37,19 @@ bool Demon::start()
         // создаём потомка
         pid = fork();
     }
-    if (pid == -1) // если произошла ошибка
-    {//FAIL_FORK
-        // запишем в лог сообщение об этом
+    if (pid == -1) 
+    {//FAIL_FORK        
         WriteLog(std::string("[MONITOR] Fork failed (%s)")+input_user_path[exec_patc_count],log_file);
-        status = FAIL_FORK; // записываем в статус ошибку открытия нового процесса
-        if(status==FAIL_FORK){ //если у нас второй раз не получается открыть процесс то пишем в лог ошибку и пропускаем
+        status = FAIL_FORK;
+        if(status==FAIL_FORK){ 
             WriteLog(std::string("Fild open process with name: ")+input_user_path[exec_patc_count],log_file);
-            ++exec_patc_count; exec_file = input_user_path[exec_patc_count];// пропускаем данный процесс и открываем следующий
+            ++exec_patc_count; exec_file = input_user_path[exec_patc_count];
             status = 0;
         }
     }//END_FAIL_FORK
 
-    else if (!pid) // если мы потомок то запускаем очередную программу и на новый цикл
+    else if (!pid) 
     {
-        // данный код выполняется в потомке!!!!
-        // запустим функцию отвечающую за работу демона
         if(execl(input_user_path[exec_patc_count].data(),"",NULL)==-1)
         {
          status = FAIL_EXEC;
@@ -61,11 +58,10 @@ bool Demon::start()
         }
 
     }
-    else // если мы родитель то мы должны запускать след процесс
-    {//PARENT_PROC
-        // данный код выполняется в родителе!!!
+    else 
+    {//PARENT_PROC        
         WriteLog(std::to_string(pid),log_file);
-        pid_vec.push_back(pid);// записываем все pid'ы         
+        pid_vec.push_back(pid);        
         ++exec_patc_count;
         if(input_user_path.size()>exec_patc_count)
         exec_file = input_user_path[exec_patc_count];
@@ -76,11 +72,11 @@ bool Demon::start()
 }
 //kill all another proc
 bool Demon::stop()
-{ // почему он не убивает мой процесс?
+{ 
     if(status==STR){
         sigignore(SIGCHLD);
         for(size_t i=0;i<pid_vec.size();++i){
-            if(kill(pid_vec[i],SIGTERM)==-1){ //почемут не убивает потомков хоть вроде посылает сигнал
+            if(kill(pid_vec[i],SIGTERM)==-1){ 
                 if(errno==ESRCH) {WriteLog("Error on kill proc",log_file);
                 return false;}
             }//another errors
@@ -108,7 +104,7 @@ bool Demon::ReadSetting(const char *FileName)
     std::fstream in(FileName); // open file for reading
     if(!in.is_open()){       
         int fd = open(this->set_file.data(),O_CREAT|O_EXCL|O_TRUNC);
-        if(fd<0)std::cout<<std::string("Can't create setting file\n")+set_file; //надо создавать общедоступный файл
+        if(fd<0)std::cout<<std::string("Can't create setting file\n")+set_file;
         else{
         const char* str("pid_file_path=\nconfig_file_path=\nlog_file_path=\n");
         write(fd,str,strlen(str));
@@ -134,7 +130,7 @@ for(size_t i=0;i<str.size();++i){
 //read cfg file with path progs
 bool Demon::readpath()
 {
-    //если нет файла то он не откроется. Надо обработать ошибку
+
     std::string str;
     std::fstream in(this->cfg_file); // open file for reading
 
@@ -142,7 +138,7 @@ bool Demon::readpath()
         WriteLog("Cant open cfg file",log_file);
         int fd = open(this->cfg_file.data(),O_CREAT|O_EXCL|S_IRWXO);
           if(fd<0){
-              WriteLog("Error to create cfg file for user",log_file); //надо создавать общедоступный файл
+              WriteLog("Error to create cfg file for user",log_file);
               return false;}
           else{
                WriteLog("Create cfg file with proc path",log_file);
@@ -153,7 +149,7 @@ bool Demon::readpath()
     }
    while(std::getline(in,str)) {
 
-       ParsPath(str,input_user_path); //загружаем в вектор путей до процессов наши пути в этой функции передовая считываемые строки
+       ParsPath(str,input_user_path);
    }
    for(size_t i=0;i<input_user_path.size();++i) WriteLog(input_user_path[i],log_file);
            WriteLog("Read all from cfg file",log_file);
@@ -180,42 +176,32 @@ void MonitorProc(Demon &dem)
     sigset_t sigset;
     siginfo_t siginfo;
 
-    // настраиваем сигналы которые будем обрабатывать
+
        sigemptyset(&sigset);
-
-       // сигнал остановки процесса пользователем
            sigaddset(&sigset, SIGQUIT);
-
-           // сигнал для остановки процесса пользователем с терминала
            sigaddset(&sigset, SIGINT);
-
-           // сигнал запроса завершения процесса
            sigaddset(&sigset, SIGTERM);
-
-           // сигнал посылаемый при изменении статуса дочернего процесса
            sigaddset(&sigset, SIGCHLD);
-
-           // пользовательский сигнал который мы будем использовать для обновления конфига
            sigaddset(&sigset, SIGUSR1);
-           sigprocmask(SIG_BLOCK, &sigset, NULL);
+    
+       sigprocmask(SIG_BLOCK, &sigset, NULL);
 
 
         if(dem.start())
           WriteLog("Dem start",dem.getLog_file());
 
 while(true){
-    sigwaitinfo(&sigset, &siginfo);//ЖДЕМ СИГНАЛА ОТ ЛЮБОГО ПРОЦЕССА
-        if (siginfo.si_signo == SIGCHLD){ //если сигнал от потомка, как определить работает ли еще процесс?
+    sigwaitinfo(&sigset, &siginfo);
+        if (siginfo.si_signo == SIGCHLD){ 
            pid_t chl_pid = wait(&status);
-           if(dem.del_pid(chl_pid)) WriteLog("Close proc with pid: " + std::to_string(chl_pid), dem.getLog_file());
-            //найти в векторе что это был за процесс и удалить его оттуда
+           if(dem.del_pid(chl_pid)) WriteLog("Close proc with pid: " + std::to_string(chl_pid), dem.getLog_file());           
         }
-        else if(siginfo.si_signo==SIGUSR1){ //сигнал перезаписи конфигов
+        else if(siginfo.si_signo==SIGUSR1){ 
             WriteLog("Restart",dem.getLog_file());
             dem.restart();
         }
 
-        else if(siginfo.si_signo==SIGTERM||siginfo.si_signo==SIGINT||siginfo.si_signo==SIGQUIT)//если любой другой ожидаемый сигнал завершения процесса
+        else if(siginfo.si_signo==SIGTERM||siginfo.si_signo==SIGINT||siginfo.si_signo==SIGQUIT)
         {
             dem.stop(); break;
     }
@@ -237,7 +223,7 @@ bool WriteLog(const std::string &msg, const std::string& Log_file="/home/user/Qt
     else{        
           time_t rawtime;
           struct tm * timeinfo;
-          std::time( &rawtime );                         // текущая дата, выраженная в секундах
+          std::time( &rawtime );
           timeinfo = std::localtime ( &rawtime );
         *Logfile<<std::asctime (timeinfo);
         *Logfile<<"\t["<<msg<<"]"<<std::endl;
