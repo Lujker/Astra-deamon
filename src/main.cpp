@@ -36,12 +36,12 @@ int main(int argc, char *argv[])
     if(strcmp(argv[1],"-d")==0){
         pid_t parpid;
 ///////////DEMON////////////////////////////////--setsid в <unistd.h>//////////
-   if((parpid=fork())<0){                  //--здесь мы пытаемся создать дочерний процесс главного процесса (масло масляное в прямом смысле)
-       std::cout<<"\ncan't fork";          //--точную копию исполняемой программы
-        exit(1);                           //--если нам по какой-либо причине это сделать не удается выходим с ошибкой.
-   }                                       //
-   else if (parpid!=0) exit(0);     //--если дочерний процесс уже существует --генерируем немедленный выход из программы(зачем нам еще одна копия программы)
-    chdir("/"); umask(0); setsid();        //--перевод нашего дочернего процесса в новую сесию
+   if((parpid=fork())<0){                 
+       std::cout<<"\ncan't fork";       
+        exit(1);                          
+   }                                       
+   else if (parpid!=0) exit(0);    
+    chdir("/"); umask(0); setsid();        
     //////////////////////////////////////////////////////////////////////////////
     /// block with capture soc
 
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     close(STDIN_FILENO);
     close(STDOUT_FILENO);
     close(STDERR_FILENO);
-     //функция по открытию всех exec в новых fork и перехвата сигнала в потоке предке
+
     MonitorProc(dem);
     WriteLog("EXIT FROM MONITOR",dem.getLog_file());
 }
